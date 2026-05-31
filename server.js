@@ -66,7 +66,7 @@ app.get("/event", async (req, res) => {
 
     console.log("event:", type, value);
 
-    res.send("ok");
+    res.send("");
 
   } catch (err) {
     console.log(err);
