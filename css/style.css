@@ -1,3 +1,39 @@
+:root {
+    /* Ángulo global */
+    --gradient-angle: 45deg;
+
+    /* BORDE SOLIDO */
+    --border-gradient: linear-gradient(
+        var(--gradient-angle),
+        #9146FF,
+        #ff4fd8
+    );
+
+    /* BORDE SOMBRA */
+    --shadow-gradient: linear-gradient(
+        var(--gradient-angle),
+        rgba(145,70,255,0.6),
+        rgba(255,79,216,0.2)
+    );
+
+    /* TEXTO NUMERO */
+    --label-gradient: linear-gradient(
+        var(--gradient-angle),
+        #ffb3d9,
+        #ffffff
+    );
+
+    /* TEXTO TITULO */
+    --value-gradient: linear-gradient(
+        var(--gradient-angle),
+        #ffffff,
+        #ffb3d9
+    );
+}
+
+/* =========================
+   BASE
+========================= */
 body {
     margin: 0;
     background: transparent;
@@ -5,31 +41,78 @@ body {
     overflow: hidden;
 }
 
+/* =========================
+   CONTAINER
+========================= */
 .container {
     display: flex;
     gap: 20px;
     padding: 20px;
 }
 
+/* =========================
+   CARD BASE
+========================= */
 .card {
+    position: relative;
     background: rgba(0, 0, 0, 0.75);
-    border: 2px solid #9146FF;
     border-radius: 15px;
     padding: 15px 25px;
     min-width: 120px;
     text-align: center;
     color: white;
-    box-shadow: 0 0 15px rgba(145,70,255,0.4);
+    overflow: hidden;
+
+    /* shadow dinámico */
+    box-shadow:
+        0 0 15px rgba(145,70,255,0.25),
+        0 0 25px rgba(255,79,216,0.1);
 }
 
+/* =========================
+   BORDER GRADIENT REAL
+========================= */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: 15px;
+
+    background: var(--border-gradient);
+
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    pointer-events: none;
+}
+
+/* =========================
+   LABEL GRADIENT TEXT
+========================= */
 .label {
     font-size: 20px;
-    color: #ffb3d9;
-    margin-bottom: 5px;
     font-weight: bold;
+
+    background: var(--label-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+
+    margin-bottom: 5px;
 }
 
+/* =========================
+   VALUE GRADIENT TEXT
+========================= */
 .value {
     font-size: 40px;
     font-weight: bold;
+
+    background: var(--value-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
