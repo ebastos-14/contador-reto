@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 3000;
 // ======================
 
 const FIREBASE_URL =
-  "https://contador-reto-default-rtdb.firebaseio.com/overlay.json";
+  "https://contador-reto-default-rtdb.firebaseio.com/counters.json";
 
 const SECRET_TOKEN = "abc123"; // cámbialo
 
