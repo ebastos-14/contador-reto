@@ -16,18 +16,18 @@
         #FF4F8F
     );
 
-    /* TEXTO NUMERO */
+    /* TEXTO TITULO */
     --label-gradient: linear-gradient(
         var(--gradient-angle),
-        #FFFFFF,
+        #FFB3D9,
         #FFFFFF
     );
 
-    /* TEXTO TITULO */
+    /* TEXTO NUMERO */
     --value-gradient: linear-gradient(
         var(--gradient-angle),
         #FFFFFF,
-        #FFB3D9
+        #FFFFFF
     );
 }
 
