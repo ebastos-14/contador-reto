@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <title>Pro Gradient Editor</title>
 
-<!-- =========================
-     PICKR LIBRARY (CDN)
-========================= -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
 
 <style>
@@ -19,6 +16,9 @@ body {
     height: 100vh;
 }
 
+/* =========================
+   PANEL
+========================= */
 .panel {
     width: 45%;
     background: #1a1a1a;
@@ -27,16 +27,43 @@ body {
 }
 
 .section {
-    margin-bottom: 20px;
+    margin-bottom: 22px;
     padding: 15px;
     border: 1px solid #333;
-    border-radius: 10px;
+    border-radius: 12px;
 }
 
 h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 12px 0;
+    font-size: 16px;
+    color: #ddd;
 }
 
+/* =========================
+   ROW LAYOUT (HORIZONTAL)
+========================= */
+.row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* pickr button container */
+.color-box {
+    width: 100%;
+}
+
+/* make pickr buttons bigger */
+.pcr-button {
+    width: 100% !important;
+    height: 45px !important;
+    border-radius: 8px !important;
+}
+
+/* =========================
+   PREVIEW
+========================= */
 .preview {
     width: 55%;
     display: flex;
@@ -47,13 +74,13 @@ h3 {
 
 .card {
     position: relative;
-    padding: 25px;
+    padding: 28px;
     border-radius: 15px;
-    min-width: 160px;
+    min-width: 180px;
     text-align: center;
 }
 
-/* BORDER GRADIENT */
+/* BORDER */
 .card::before {
     content: "";
     position: absolute;
@@ -74,29 +101,18 @@ h3 {
 
 /* TEXT */
 .label {
-    font-size: 18px;
+    font-size: 20px;
     background: linear-gradient(45deg, var(--l1), var(--l2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .value {
-    font-size: 40px;
+    font-size: 44px;
     font-weight: bold;
     background: linear-gradient(45deg, var(--v1), var(--v2));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-}
-
-/* COLOR BUTTONS */
-.color-btn {
-    width: 100%;
-    padding: 8px;
-    margin-top: 10px;
-    background: #222;
-    border: 1px solid #444;
-    cursor: pointer;
-    border-radius: 5px;
 }
 </style>
 
@@ -104,36 +120,46 @@ h3 {
 
 <body>
 
-<!-- =========================
-     PANEL
-========================= -->
 <div class="panel">
 
+    <!-- BORDER -->
     <div class="section">
-        <h3>Border Color 1</h3>
-        <div id="b1"></div>
-
-        <h3>Border Color 2</h3>
-        <div id="b2"></div>
+        <h3>Border Gradient</h3>
+        <div class="row">
+            <div id="b1" class="color-box"></div>
+            <div id="b2" class="color-box"></div>
+        </div>
     </div>
 
+    <!-- LABEL -->
     <div class="section">
         <h3>Text Label</h3>
-        <div id="l1"></div>
-        <div id="l2"></div>
+        <div class="row">
+            <div id="l1" class="color-box"></div>
+            <div id="l2" class="color-box"></div>
+        </div>
     </div>
 
+    <!-- VALUE -->
     <div class="section">
         <h3>Text Value</h3>
-        <div id="v1"></div>
-        <div id="v2"></div>
+        <div class="row">
+            <div id="v1" class="color-box"></div>
+            <div id="v2" class="color-box"></div>
+        </div>
+    </div>
+
+    <!-- SHADOW -->
+    <div class="section">
+        <h3>Shadow Card</h3>
+        <div class="row">
+            <div id="s1" class="color-box"></div>
+            <div id="s2" class="color-box"></div>
+        </div>
     </div>
 
 </div>
 
-<!-- =========================
-     PREVIEW
-========================= -->
 <div class="preview">
     <div class="card">
         <div class="label">SUBS</div>
@@ -141,28 +167,19 @@ h3 {
     </div>
 </div>
 
-<!-- =========================
-     PICKR SCRIPT
-========================= -->
 <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 
 <script>
-/* =========================
-   STATE
-========================= */
+
 const state = {
-    b1: "#9146FF",
-    b2: "#ff4fd8",
-    l1: "#ffffff",
-    l2: "#ffb3d9",
-    v1: "#ffffff",
-    v2: "#ffffff"
+    b1:"#9146FF", b2:"#ff4fd8",
+    l1:"#ffffff", l2:"#ffb3d9",
+    v1:"#ffffff", v2:"#ffffff",
+    s1:"#9146FF", s2:"#ff4fd8"
 };
 
-/* =========================
-   APPLY
-========================= */
 function apply() {
+
     document.documentElement.style.setProperty("--b1", state.b1);
     document.documentElement.style.setProperty("--b2", state.b2);
 
@@ -171,48 +188,46 @@ function apply() {
 
     document.documentElement.style.setProperty("--v1", state.v1);
     document.documentElement.style.setProperty("--v2", state.v2);
+
+    document.querySelector(".card").style.boxShadow =
+        `0 0 25px ${state.s1}88, 0 0 50px ${state.s2}55`;
 }
 
-/* =========================
-   PICKR FACTORY
-========================= */
-function createPicker(id, key) {
+/* PICKR */
+function picker(id, key) {
     return Pickr.create({
         el: document.getElementById(id),
         theme: 'classic',
-
         default: state[key],
 
         components: {
             preview: true,
             opacity: false,
             hue: true,
-
             interaction: {
                 hex: true,
-                rgba: true,
                 input: true,
                 save: true
             }
         }
-    }).on('change', (color) => {
-        state[key] = color.toHEXA().toString();
+    }).on('change', (c) => {
+        state[key] = c.toHEXA().toString();
         apply();
     });
 }
 
-/* =========================
-   INIT PICKERS
-========================= */
-createPicker("b1", "b1");
-createPicker("b2", "b2");
-createPicker("l1", "l1");
-createPicker("l2", "l2");
-createPicker("v1", "v1");
-createPicker("v2", "v2");
-
 /* INIT */
+picker("b1","b1");
+picker("b2","b2");
+picker("l1","l1");
+picker("l2","l2");
+picker("v1","v1");
+picker("v2","v2");
+picker("s1","s1");
+picker("s2","s2");
+
 apply();
+
 </script>
 
 </body>
