@@ -1,52 +1,46 @@
 const express = require("express");
-const app = express();
 
+const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ======================
-// CONFIG
-// ======================
-
+// 🔥 Firebase
 const FIREBASE_URL =
   "https://contador-reto-default-rtdb.firebaseio.com/counters.json";
 
-const SECRET_TOKEN = "abc123"; // cámbialo
+// 🔐 Seguridad simple
+const SECRET_TOKEN = "abc123";
 
 // ======================
-// ESTADO LOCAL
+// FUNCIÓN: LEER + ACTUALIZAR
 // ======================
 
-let stats = {
-  subs: 0,
-  bits: 0
-};
-
-// Anti spam simple (último evento)
-let lastEvent = {
-  type: null,
-  time: 0
-};
-
-// ======================
-// UTIL: GUARDAR FIREBASE
-// ======================
-
-async function saveToFirebase() {
+async function updateStats(addSubs, addBits) {
   try {
+    const res = await fetch(FIREBASE_URL);
+    const data = await res.json();
+
+    const current = data || { subs: 0, bits: 0 };
+
+    const updated = {
+      subs: (current.subs || 0) + (addSubs || 0),
+      bits: (current.bits || 0) + (addBits || 0)
+    };
+
     await fetch(FIREBASE_URL, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify(stats)
+      body: JSON.stringify(updated)
     });
+
   } catch (err) {
-    console.log("Error Firebase:", err.message);
+    console.log("Firebase error:", err.message);
   }
 }
 
 // ======================
-// MIDDLEWARE SIMPLE
+// ROUTE PRINCIPAL
 // ======================
 
 app.get("/event", async (req, res) => {
@@ -55,39 +49,25 @@ app.get("/event", async (req, res) => {
 
     // seguridad
     if (token !== SECRET_TOKEN) {
-      return res.status(403).send("Invalid token");
+      return res.status(403).send("invalid token");
     }
 
-    const now = Date.now();
+    const value = Number(amount || 0);
 
-    // anti spam (500ms)
-    if (lastEvent.type === type && now - lastEvent.time < 500) {
-      return res.send("ignored spam");
-    }
-
-    lastEvent = { type, time: now };
-
-    // ======================
-    // SUBS
-    // ======================
+    // SUB
     if (type === "sub") {
-      stats.subs += 1;
+      await updateStats(1, 0);
     }
 
-    // ======================
     // BITS
-    // ======================
     if (type === "cheer") {
-      const value = Number(amount || 0);
-      stats.bits += value;
+      await updateStats(0, value);
     }
 
-    // guardar en firebase
-    await saveToFirebase();
-
-    console.log("Evento:", type, amount);
+    console.log("event:", type, value);
 
     res.send("ok");
+
   } catch (err) {
     console.log(err);
     res.status(500).send("error");
@@ -95,13 +75,11 @@ app.get("/event", async (req, res) => {
 });
 
 // ======================
-// RESET (opcional)
+// ROOT CHECK
 // ======================
 
-app.get("/reset", async (req, res) => {
-  stats = { subs: 0, bits: 0 };
-  await saveToFirebase();
-  res.send("reset ok");
+app.get("/", (req, res) => {
+  res.send("server ok");
 });
 
 // ======================
