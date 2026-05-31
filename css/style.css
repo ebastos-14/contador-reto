@@ -19,15 +19,15 @@
     /* TEXTO NUMERO */
     --label-gradient: linear-gradient(
         var(--gradient-angle),
-        #ffb3d9,
-        #ffffff
+        #FFFFFF,
+        #FFFFFF
     );
 
     /* TEXTO TITULO */
     --value-gradient: linear-gradient(
         var(--gradient-angle),
-        #ffffff,
-        #ffb3d9
+        #FFFFFF,
+        #FFB3D9
     );
 }
 
