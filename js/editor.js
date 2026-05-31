@@ -17,9 +17,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// =====================
-// REFERENCIA FIREBASE
-// =====================
 const styleRef = ref(db, "style");
 
 // =====================
@@ -34,29 +31,28 @@ const bitsHex = document.getElementById("bitsHex");
 const fontFamily = document.getElementById("fontFamily");
 const fontSize = document.getElementById("fontSize");
 
-const frame = document.getElementById("frame");
-
 // =====================
-// ESTADO LOCAL
+// STATE
 // =====================
 let state = {
     default: {
         subsColor: "#9146FF",
         bitsColor: "#FFD54F",
+        textColor: "#ffffff",
+        bgColor: "#1a1a1a",
         font: "Arial",
-        size: 24
+        size: 18
     },
     custom: null
 };
 
 // =====================
-// LEER FIREBASE
+// LOAD FIREBASE
 // =====================
 onValue(styleRef, (snap) => {
     const data = snap.val();
 
     if (!data) {
-        // si no existe, crear default
         set(styleRef, state);
         return;
     }
@@ -66,11 +62,11 @@ onValue(styleRef, (snap) => {
     const active = state.custom || state.default;
 
     loadInputs(active);
-    applyPreview(active);
+    applyCSS(active);
 });
 
 // =====================
-// CARGAR INPUTS
+// INPUTS
 // =====================
 function loadInputs(style) {
     subsPicker.value = style.subsColor;
@@ -84,81 +80,80 @@ function loadInputs(style) {
 }
 
 // =====================
-// PREVIEW VISUAL (EDITOR)
+// APPLY CSS VARIABLES
 // =====================
-function applyPreview(style) {
+function applyCSS(style) {
+    document.documentElement.style.setProperty("--subs-color", style.subsColor);
+    document.documentElement.style.setProperty("--bits-color", style.bitsColor);
+    document.documentElement.style.setProperty("--text-color", style.textColor || "#fff");
+    document.documentElement.style.setProperty("--bg-color", style.bgColor || "#1a1a1a");
+    document.documentElement.style.setProperty("--font-family", style.font);
+    document.documentElement.style.setProperty("--font-size", style.size + "px");
 
+    // preview box color
     document.getElementById("subsCurrent").style.background = style.subsColor;
     document.getElementById("bitsCurrent").style.background = style.bitsColor;
-
-    document.getElementById("fontPreview").style.fontFamily = style.font;
-    document.getElementById("fontPreview").style.fontSize = style.size + "px";
 }
 
 // =====================
-// UPDATE LIVE STATE
+// GET CURRENT INPUT STATE
 // =====================
-function getCurrentInputStyle() {
+function getCurrent() {
     return {
         subsColor: subsHex.value,
         bitsColor: bitsHex.value,
+        textColor: "#ffffff",
+        bgColor: "#1a1a1a",
         font: fontFamily.value,
         size: Number(fontSize.value)
     };
 }
 
 // =====================
-// INPUT EVENTS
+// LIVE UPDATE
 // =====================
+function live() {
+    const style = getCurrent();
+    applyCSS(style);
+}
 
-// subs
+// =====================
+// EVENTS
+// =====================
 subsPicker.addEventListener("input", () => {
     subsHex.value = subsPicker.value;
-    livePreview();
+    live();
 });
 
 subsHex.addEventListener("input", () => {
     subsPicker.value = subsHex.value;
-    livePreview();
+    live();
 });
 
-// bits
 bitsPicker.addEventListener("input", () => {
     bitsHex.value = bitsPicker.value;
-    livePreview();
+    live();
 });
 
 bitsHex.addEventListener("input", () => {
     bitsPicker.value = bitsHex.value;
-    livePreview();
+    live();
 });
 
-// font
-fontFamily.addEventListener("input", livePreview);
-fontSize.addEventListener("input", livePreview);
+fontFamily.addEventListener("input", live);
+fontSize.addEventListener("input", live);
 
 // =====================
-// LIVE PREVIEW (SIN GUARDAR)
-// =====================
-function livePreview() {
-    const style = getCurrentInputStyle();
-    applyPreview(style);
-}
-
-// =====================
-// GUARDAR CUSTOM
+// SAVE CUSTOM
 // =====================
 document.getElementById("save").addEventListener("click", () => {
-
-    const custom = getCurrentInputStyle();
-
+    const custom = getCurrent();
     set(ref(db, "style/custom"), custom);
 });
 
 // =====================
-// RESET A DEFAULT
+// RESET DEFAULT
 // =====================
 document.getElementById("reset").addEventListener("click", () => {
-
     set(ref(db, "style/custom"), null);
 });
