@@ -2,14 +2,14 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Gradient Picker Pro</title>
+<title>Gradient UI Editor</title>
 
 <style>
 body {
     margin: 0;
     display: flex;
     font-family: Arial;
-    background: #0f0f0f;
+    background: #0d0d0d;
     color: white;
     height: 100vh;
 }
@@ -32,7 +32,7 @@ body {
 }
 
 h3 {
-    margin-top: 0;
+    margin: 0 0 10px 0;
 }
 
 /* =========================
@@ -50,14 +50,12 @@ h3 {
     position: relative;
     padding: 25px;
     border-radius: 15px;
-    min-width: 160px;
     text-align: center;
-    background: var(--bg);
-    color: var(--text);
-    box-shadow: var(--shadow);
+    min-width: 160px;
+    background: transparent;
 }
 
-/* BORDER GRADIENT */
+/* BORDER */
 .card::before {
     content: "";
     position: absolute;
@@ -65,11 +63,7 @@ h3 {
     padding: 2px;
     border-radius: 15px;
 
-    background: linear-gradient(
-        45deg,
-        var(--b1),
-        var(--b2)
-    );
+    background: linear-gradient(45deg, var(--b1), var(--b2));
 
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
@@ -81,25 +75,21 @@ h3 {
 }
 
 /* =========================
-   TEXT GRADIENT
+   TEXT GRADIENTS
 ========================= */
-.label, .value {
-    background: linear-gradient(
-        45deg,
-        var(--t1),
-        var(--t2)
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
 .label {
     font-size: 18px;
+    background: linear-gradient(45deg, var(--l1), var(--l2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .value {
     font-size: 40px;
     font-weight: bold;
+    background: linear-gradient(45deg, var(--v1), var(--v2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 /* =========================
@@ -113,7 +103,7 @@ h3 {
 }
 
 input[type="color"] {
-    width: 50px;
+    width: 45px;
     height: 35px;
     border: none;
     background: none;
@@ -121,10 +111,10 @@ input[type="color"] {
 
 .hex {
     width: 90px;
+    padding: 5px;
     background: #111;
     border: 1px solid #444;
     color: white;
-    padding: 5px;
 }
 </style>
 
@@ -133,61 +123,41 @@ input[type="color"] {
 <body>
 
 <!-- =========================
-     PANEL
+   PANEL
 ========================= -->
 <div class="panel">
 
     <div class="section">
-        <h3>Border Gradient</h3>
-        <div class="row">
-            <input type="color" id="b1c">
-            <input class="hex" id="b1h">
-        </div>
-        <div class="row">
-            <input type="color" id="b2c">
-            <input class="hex" id="b2h">
-        </div>
+        <h3>Border Card</h3>
+        <div class="row"><input type="color" id="b1c"><input class="hex" id="b1h"></div>
+        <div class="row"><input type="color" id="b2c"><input class="hex" id="b2h"></div>
     </div>
 
     <div class="section">
-        <h3>Text Gradient</h3>
-        <div class="row">
-            <input type="color" id="t1c">
-            <input class="hex" id="t1h">
-        </div>
-        <div class="row">
-            <input type="color" id="t2c">
-            <input class="hex" id="t2h">
-        </div>
+        <h3>Text Label</h3>
+        <div class="row"><input type="color" id="l1c"><input class="hex" id="l1h"></div>
+        <div class="row"><input type="color" id="l2c"><input class="hex" id="l2h"></div>
     </div>
 
     <div class="section">
-        <h3>Background</h3>
-        <div class="row">
-            <input type="color" id="bgc">
-            <input class="hex" id="bgh">
-        </div>
+        <h3>Text Value</h3>
+        <div class="row"><input type="color" id="v1c"><input class="hex" id="v1h"></div>
+        <div class="row"><input type="color" id="v2c"><input class="hex" id="v2h"></div>
     </div>
 
     <div class="section">
-        <h3>Shadow</h3>
-        <div class="row">
-            <input type="color" id="s1c">
-            <input class="hex" id="s1h">
-        </div>
-        <div class="row">
-            <input type="color" id="s2c">
-            <input class="hex" id="s2h">
-        </div>
+        <h3>Shadow Card</h3>
+        <div class="row"><input type="color" id="s1c"><input class="hex" id="s1h"></div>
+        <div class="row"><input type="color" id="s2c"><input class="hex" id="s2h"></div>
     </div>
 
 </div>
 
 <!-- =========================
-     PREVIEW
+   PREVIEW
 ========================= -->
 <div class="preview">
-    <div class="card">
+    <div class="card" id="card">
         <div class="label">SUBS</div>
         <div class="value">12</div>
     </div>
@@ -195,11 +165,13 @@ input[type="color"] {
 
 <script>
 /* =========================
-   UTIL HEX SYNC
+   HEX SYNC
 ========================= */
-function sync(color, hex) {
-    color.addEventListener("input", () => hex.value = color.value);
-    hex.addEventListener("input", () => color.value = hex.value);
+function bind(c, h) {
+    c.addEventListener("input", () => h.value = c.value);
+    h.addEventListener("input", () => c.value = h.value);
+    c.addEventListener("input", apply);
+    h.addEventListener("input", apply);
 }
 
 /* =========================
@@ -207,38 +179,36 @@ function sync(color, hex) {
 ========================= */
 function apply() {
 
+    // BORDER
     document.documentElement.style.setProperty("--b1", b1c.value);
     document.documentElement.style.setProperty("--b2", b2c.value);
 
-    document.documentElement.style.setProperty("--t1", t1c.value);
-    document.documentElement.style.setProperty("--t2", t2c.value);
+    // LABEL TEXT
+    document.documentElement.style.setProperty("--l1", l1c.value);
+    document.documentElement.style.setProperty("--l2", l2c.value);
 
-    document.documentElement.style.setProperty("--bg", bgc.value);
+    // VALUE TEXT
+    document.documentElement.style.setProperty("--v1", v1c.value);
+    document.documentElement.style.setProperty("--v2", v2c.value);
 
-    document.documentElement.style.setProperty("--s1", s1c.value);
-    document.documentElement.style.setProperty("--s2", s2c.value);
-
-    document.querySelector(".card").style.boxShadow =
-        `0 0 20px ${s1c.value}88, 0 0 40px ${s2c.value}44`;
+    // SHADOW
+    document.getElementById("card").style.boxShadow =
+        `0 0 20px ${s1c.value}88, 0 0 40px ${s2c.value}55`;
 }
 
 /* =========================
-   INIT SYNC
+   INIT BINDINGS
 ========================= */
-const ids = [
-    "b1","b2","t1","t2","bg","s1","s2"
-];
+const ids = ["b1","b2","l1","l2","v1","v2","s1","s2"];
 
 ids.forEach(id => {
-    const c = document.getElementById(id + "c");
-    const h = document.getElementById(id + "h");
-
-    sync(c, h);
-    c.addEventListener("input", apply);
-    h.addEventListener("input", apply);
+    bind(
+        document.getElementById(id + "c"),
+        document.getElementById(id + "h")
+    );
 });
 
-/* INIT DEFAULT */
+/* DEFAULT APPLY */
 apply();
 </script>
 
