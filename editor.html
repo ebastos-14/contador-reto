@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Gradient Theme Editor</title>
+
+<style>
+:root {
+    --border: #9146FF;
+    --text: #ffffff;
+    --bg: #000000;
+    --shadow: rgba(145,70,255,0.3);
+}
+
+/* =========================
+   BASE
+========================= */
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f0f0f;
+    color: white;
+    display: flex;
+    height: 100vh;
+}
+
+/* =========================
+   PANEL
+========================= */
+.panel {
+    width: 40%;
+    padding: 20px;
+    background: #1a1a1a;
+    overflow-y: auto;
+}
+
+.section {
+    margin-bottom: 20px;
+    padding: 15px;
+    border: 1px solid #333;
+    border-radius: 10px;
+}
+
+h3 {
+    margin: 0 0 10px 0;
+}
+
+/* =========================
+   PREVIEW
+========================= */
+.preview {
+    width: 60%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg);
+}
+
+.card {
+    position: relative;
+    padding: 20px;
+    border-radius: 15px;
+    min-width: 150px;
+    text-align: center;
+    background: var(--bg);
+    color: var(--text);
+    box-shadow: 0 0 20px var(--shadow);
+    border: 2px solid transparent;
+}
+
+/* BORDER GRADIENT SUPPORT */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    padding: 2px;
+    border-radius: 15px;
+
+    background: var(--border);
+
+    -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+
+    pointer-events: none;
+}
+
+/* =========================
+   TEXT
+========================= */
+.label {
+    font-size: 18px;
+}
+
+.value {
+    font-size: 40px;
+    font-weight: bold;
+}
+
+/* =========================
+   INPUTS
+========================= */
+.row {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 6px;
+    background: #111;
+    border: 1px solid #444;
+    color: white;
+    border-radius: 5px;
+}
+
+button {
+    margin-top: 10px;
+    padding: 8px;
+    width: 100%;
+}
+</style>
+
+</head>
+
+<body>
+
+<!-- =========================
+     EDITOR
+========================= -->
+<div class="panel">
+
+    <div class="section">
+        <h3>Border (color o gradient)</h3>
+        <input type="text" id="border" value="linear-gradient(45deg,#9146FF,#ff4fd8)">
+    </div>
+
+    <div class="section">
+        <h3>Text Color</h3>
+        <input type="text" id="text" value="#ffffff">
+    </div>
+
+    <div class="section">
+        <h3>Background</h3>
+        <input type="text" id="bg" value="#000000">
+    </div>
+
+    <div class="section">
+        <h3>Shadow (color o rgba)</h3>
+        <input type="text" id="shadow" value="0 0 20px rgba(145,70,255,0.4)">
+    </div>
+
+    <button onclick="apply()">Aplicar</button>
+
+</div>
+
+<!-- =========================
+     PREVIEW
+========================= -->
+<div class="preview">
+    <div class="card" id="card">
+        <div class="label">SUBS</div>
+        <div class="value">12</div>
+    </div>
+</div>
+
+<script>
+/* =========================
+   APPLY SYSTEM
+========================= */
+function apply() {
+
+    const border = document.getElementById("border").value;
+    const text = document.getElementById("text").value;
+    const bg = document.getElementById("bg").value;
+    const shadow = document.getElementById("shadow").value;
+
+    const root = document.documentElement;
+
+    // BORDER (gradient o color)
+    root.style.setProperty("--border", border);
+
+    // TEXT
+    root.style.setProperty("--text", text);
+    document.querySelector(".card").style.color = text;
+
+    // BACKGROUND
+    root.style.setProperty("--bg", bg);
+
+    // SHADOW
+    root.style.setProperty("--shadow", shadow);
+
+    // APPLY BG DIRECT
+    document.querySelector(".preview").style.background = bg;
+}
+
+/* INIT */
+apply();
+</script>
+
+</body>
+</html>
