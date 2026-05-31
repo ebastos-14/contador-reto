@@ -1,8 +1,20 @@
+:root {
+    --subs-color: #9146FF;
+    --bits-color: #FFD54F;
+    --text-color: #ffffff;
+    --bg-color: #1a1a1a;
+    --font-family: Arial;
+    --font-size: 18px;
+}
+
+/* =========================
+   BASE
+========================= */
 body {
     margin: 0;
-    font-family: Arial;
     background: #111;
-    color: white;
+    color: var(--text-color);
+    font-family: var(--font-family);
 }
 
 /* =========================
@@ -14,34 +26,33 @@ body {
 }
 
 /* =========================
-   PANEL IZQUIERDO
+   PANEL
 ========================= */
 .panel {
     width: 35%;
     padding: 20px;
-    background: #1a1a1a;
+    background: var(--bg-color);
     overflow-y: auto;
 }
 
+/* =========================
+   SECCIONES
+========================= */
 .section {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
     padding: 12px;
     border: 1px solid #333;
     border-radius: 10px;
 }
 
 /* =========================
-   COLORES (IMPORTANTE: SIN BACKGROUND FIJO)
+   BOX COLOR PREVIEW
 ========================= */
 .box {
     width: 50%;
     height: 35px;
     border-radius: 6px;
     border: 1px solid #444;
-
-    /* 🔥 IMPORTANTE:
-       NO background aquí (lo controla JS)
-    */
     background: transparent;
 }
 
@@ -63,7 +74,7 @@ input[type="text"] {
     background: #222;
     border: 1px solid #444;
     color: white;
-    border-radius: 5px;
+    border-radius: 6px;
 }
 
 input[type="color"] {
@@ -80,7 +91,8 @@ input[type="color"] {
     margin-top: 10px;
     padding: 10px;
     border: 1px dashed #555;
-    min-height: 30px;
+    font-family: var(--font-family);
+    font-size: var(--font-size);
 }
 
 /* =========================
