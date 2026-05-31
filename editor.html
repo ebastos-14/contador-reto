@@ -2,7 +2,12 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Gradient UI Editor</title>
+<title>Pro Gradient Editor</title>
+
+<!-- =========================
+     PICKR LIBRARY (CDN)
+========================= -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/classic.min.css"/>
 
 <style>
 body {
@@ -14,9 +19,6 @@ body {
     height: 100vh;
 }
 
-/* =========================
-   PANEL
-========================= */
 .panel {
     width: 45%;
     background: #1a1a1a;
@@ -35,9 +37,6 @@ h3 {
     margin: 0 0 10px 0;
 }
 
-/* =========================
-   PREVIEW
-========================= */
 .preview {
     width: 55%;
     display: flex;
@@ -50,12 +49,11 @@ h3 {
     position: relative;
     padding: 25px;
     border-radius: 15px;
-    text-align: center;
     min-width: 160px;
-    background: transparent;
+    text-align: center;
 }
 
-/* BORDER */
+/* BORDER GRADIENT */
 .card::before {
     content: "";
     position: absolute;
@@ -74,9 +72,7 @@ h3 {
     pointer-events: none;
 }
 
-/* =========================
-   TEXT GRADIENTS
-========================= */
+/* TEXT */
 .label {
     font-size: 18px;
     background: linear-gradient(45deg, var(--l1), var(--l2));
@@ -92,29 +88,15 @@ h3 {
     -webkit-text-fill-color: transparent;
 }
 
-/* =========================
-   INPUTS
-========================= */
-.row {
-    display: flex;
-    gap: 10px;
-    align-items: center;
+/* COLOR BUTTONS */
+.color-btn {
+    width: 100%;
+    padding: 8px;
     margin-top: 10px;
-}
-
-input[type="color"] {
-    width: 45px;
-    height: 35px;
-    border: none;
-    background: none;
-}
-
-.hex {
-    width: 90px;
-    padding: 5px;
-    background: #111;
+    background: #222;
     border: 1px solid #444;
-    color: white;
+    cursor: pointer;
+    border-radius: 5px;
 }
 </style>
 
@@ -123,92 +105,113 @@ input[type="color"] {
 <body>
 
 <!-- =========================
-   PANEL
+     PANEL
 ========================= -->
 <div class="panel">
 
     <div class="section">
-        <h3>Border Card</h3>
-        <div class="row"><input type="color" id="b1c"><input class="hex" id="b1h"></div>
-        <div class="row"><input type="color" id="b2c"><input class="hex" id="b2h"></div>
+        <h3>Border Color 1</h3>
+        <div id="b1"></div>
+
+        <h3>Border Color 2</h3>
+        <div id="b2"></div>
     </div>
 
     <div class="section">
         <h3>Text Label</h3>
-        <div class="row"><input type="color" id="l1c"><input class="hex" id="l1h"></div>
-        <div class="row"><input type="color" id="l2c"><input class="hex" id="l2h"></div>
+        <div id="l1"></div>
+        <div id="l2"></div>
     </div>
 
     <div class="section">
         <h3>Text Value</h3>
-        <div class="row"><input type="color" id="v1c"><input class="hex" id="v1h"></div>
-        <div class="row"><input type="color" id="v2c"><input class="hex" id="v2h"></div>
-    </div>
-
-    <div class="section">
-        <h3>Shadow Card</h3>
-        <div class="row"><input type="color" id="s1c"><input class="hex" id="s1h"></div>
-        <div class="row"><input type="color" id="s2c"><input class="hex" id="s2h"></div>
+        <div id="v1"></div>
+        <div id="v2"></div>
     </div>
 
 </div>
 
 <!-- =========================
-   PREVIEW
+     PREVIEW
 ========================= -->
 <div class="preview">
-    <div class="card" id="card">
+    <div class="card">
         <div class="label">SUBS</div>
         <div class="value">12</div>
     </div>
 </div>
 
+<!-- =========================
+     PICKR SCRIPT
+========================= -->
+<script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
 <script>
 /* =========================
-   HEX SYNC
+   STATE
 ========================= */
-function bind(c, h) {
-    c.addEventListener("input", () => h.value = c.value);
-    h.addEventListener("input", () => c.value = h.value);
-    c.addEventListener("input", apply);
-    h.addEventListener("input", apply);
-}
+const state = {
+    b1: "#9146FF",
+    b2: "#ff4fd8",
+    l1: "#ffffff",
+    l2: "#ffb3d9",
+    v1: "#ffffff",
+    v2: "#ffffff"
+};
 
 /* =========================
-   APPLY SYSTEM
+   APPLY
 ========================= */
 function apply() {
+    document.documentElement.style.setProperty("--b1", state.b1);
+    document.documentElement.style.setProperty("--b2", state.b2);
 
-    // BORDER
-    document.documentElement.style.setProperty("--b1", b1c.value);
-    document.documentElement.style.setProperty("--b2", b2c.value);
+    document.documentElement.style.setProperty("--l1", state.l1);
+    document.documentElement.style.setProperty("--l2", state.l2);
 
-    // LABEL TEXT
-    document.documentElement.style.setProperty("--l1", l1c.value);
-    document.documentElement.style.setProperty("--l2", l2c.value);
-
-    // VALUE TEXT
-    document.documentElement.style.setProperty("--v1", v1c.value);
-    document.documentElement.style.setProperty("--v2", v2c.value);
-
-    // SHADOW
-    document.getElementById("card").style.boxShadow =
-        `0 0 20px ${s1c.value}88, 0 0 40px ${s2c.value}55`;
+    document.documentElement.style.setProperty("--v1", state.v1);
+    document.documentElement.style.setProperty("--v2", state.v2);
 }
 
 /* =========================
-   INIT BINDINGS
+   PICKR FACTORY
 ========================= */
-const ids = ["b1","b2","l1","l2","v1","v2","s1","s2"];
+function createPicker(id, key) {
+    return Pickr.create({
+        el: document.getElementById(id),
+        theme: 'classic',
 
-ids.forEach(id => {
-    bind(
-        document.getElementById(id + "c"),
-        document.getElementById(id + "h")
-    );
-});
+        default: state[key],
 
-/* DEFAULT APPLY */
+        components: {
+            preview: true,
+            opacity: false,
+            hue: true,
+
+            interaction: {
+                hex: true,
+                rgba: true,
+                input: true,
+                save: true
+            }
+        }
+    }).on('change', (color) => {
+        state[key] = color.toHEXA().toString();
+        apply();
+    });
+}
+
+/* =========================
+   INIT PICKERS
+========================= */
+createPicker("b1", "b1");
+createPicker("b2", "b2");
+createPicker("l1", "l1");
+createPicker("l2", "l2");
+createPicker("v1", "v1");
+createPicker("v2", "v2");
+
+/* INIT */
 apply();
 </script>
 
