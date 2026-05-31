@@ -1,26 +1,35 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 // =====================
 // FIREBASE CONFIG
 // =====================
 const firebaseConfig = {
-    apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
-    authDomain: "contador-reto.firebaseapp.com",
-    databaseURL: "https://contador-reto-default-rtdb.firebaseio.com",
-    projectId: "contador-reto",
-    storageBucket: "contador-reto.firebasestorage.app",
-    messagingSenderId: "704169660240",
-    appId: "1:704169660240:web:1a4b3e35a9498292c0e655"
+  apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
+  authDomain: "contador-reto.firebaseapp.com",
+  databaseURL: "https://contador-reto-default-rtdb.firebaseio.com",
+  projectId: "contador-reto",
+  storageBucket: "contador-reto.firebasestorage.app",
+  messagingSenderId: "704169660240",
+  appId: "1:704169660240:web:1a4b3e35a9498292c0e655"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// =====================
+// REFERENCIA PRINCIPAL
+// =====================
 const styleRef = ref(db, "style");
 
 // =====================
-// ELEMENTOS
+// ELEMENTOS UI
 // =====================
 const subsPicker = document.getElementById("subsPicker");
 const subsHex = document.getElementById("subsHex");
@@ -32,166 +41,147 @@ const fontFamily = document.getElementById("fontFamily");
 const fontSize = document.getElementById("fontSize");
 
 // =====================
-// STATE
+// DEFAULT STYLE
 // =====================
-let state = {
-    default: {
-        subsColor: "#9146FF",
-        bitsColor: "#FFD54F",
-        textColor: "#ffffff",
-        bgColor: "#1a1a1a",
-        font: "Arial",
-        size: 18
-    },
-    custom: null
+const DEFAULT_STYLE = {
+  subsColor: "#9146FF",
+  bitsColor: "#FFD54F",
+  textColor: "#ffffff",
+  bgColor: "#1a1a1a",
+  font: "Arial",
+  size: 18
 };
 
 // =====================
-// LOAD FIREBASE
+// INIT FIREBASE (CREA SI NO EXISTE)
+// =====================
+async function init() {
+  const snap = await get(styleRef);
+
+  if (!snap.exists()) {
+    await set(styleRef, {
+      default: DEFAULT_STYLE,
+      custom: null
+    });
+
+    console.log("Firebase style inicializado");
+  }
+}
+
+init();
+
+// =====================
+// LISTENER REAL TIME
 // =====================
 onValue(styleRef, (snap) => {
-    const data = snap.val();
+  const data = snap.val();
 
-    if (!data) {
-        set(styleRef, state);
-        return;
-    }
+  if (!data) return;
 
-    state = data;
+  const active = data.custom || data.default || DEFAULT_STYLE;
 
-    const active = state.custom || state.default;
-
-    loadInputs(active);
-    applyCSS(active);
+  loadInputs(active);
+  applyCSS(active);
 });
 
 // =====================
-// INPUTS
+// LOAD INPUTS
 // =====================
 function loadInputs(style) {
-    subsPicker.value = style.subsColor;
-    subsHex.value = style.subsColor;
+  subsPicker.value = style.subsColor;
+  subsHex.value = style.subsColor;
 
-    bitsPicker.value = style.bitsColor;
-    bitsHex.value = style.bitsColor;
+  bitsPicker.value = style.bitsColor;
+  bitsHex.value = style.bitsColor;
 
-    fontFamily.value = style.font;
-    fontSize.value = style.size;
+  fontFamily.value = style.font;
+  fontSize.value = style.size;
 }
 
 // =====================
 // APPLY CSS VARIABLES
 // =====================
 function applyCSS(style) {
-    document.documentElement.style.setProperty("--subs-color", style.subsColor);
-    document.documentElement.style.setProperty("--bits-color", style.bitsColor);
-    document.documentElement.style.setProperty("--text-color", style.textColor || "#fff");
-    document.documentElement.style.setProperty("--bg-color", style.bgColor || "#1a1a1a");
-    document.documentElement.style.setProperty("--font-family", style.font);
-    document.documentElement.style.setProperty("--font-size", style.size + "px");
+  const root = document.documentElement;
 
-    // preview box color
-    document.getElementById("subsCurrent").style.background = style.subsColor;
-    document.getElementById("bitsCurrent").style.background = style.bitsColor;
+  root.style.setProperty("--subs-color", style.subsColor);
+  root.style.setProperty("--bits-color", style.bitsColor);
+  root.style.setProperty("--text-color", style.textColor);
+  root.style.setProperty("--bg-color", style.bgColor);
+  root.style.setProperty("--font-family", style.font);
+  root.style.setProperty("--font-size", style.size + "px");
+
+  // preview visual (editor)
+  const subsBox = document.getElementById("subsCurrent");
+  const bitsBox = document.getElementById("bitsCurrent");
+
+  if (subsBox) subsBox.style.background = style.subsColor;
+  if (bitsBox) bitsBox.style.background = style.bitsColor;
 }
 
 // =====================
 // GET CURRENT INPUT STATE
 // =====================
 function getCurrent() {
-    return {
-        subsColor: subsHex.value,
-        bitsColor: bitsHex.value,
-        textColor: "#ffffff",
-        bgColor: "#1a1a1a",
-        font: fontFamily.value,
-        size: Number(fontSize.value)
-    };
+  return {
+    subsColor: subsHex.value,
+    bitsColor: bitsHex.value,
+    textColor: "#ffffff",
+    bgColor: "#1a1a1a",
+    font: fontFamily.value,
+    size: Number(fontSize.value)
+  };
 }
 
 // =====================
 // LIVE UPDATE
 // =====================
-function live() {
-    const style = getCurrent();
-    applyCSS(style);
+function liveUpdate() {
+  applyCSS(getCurrent());
 }
 
 // =====================
-// EVENTS
+// INPUT EVENTS
 // =====================
 subsPicker.addEventListener("input", () => {
-    subsHex.value = subsPicker.value;
-    live();
+  subsHex.value = subsPicker.value;
+  liveUpdate();
 });
 
 subsHex.addEventListener("input", () => {
-    subsPicker.value = subsHex.value;
-    live();
+  subsPicker.value = subsHex.value;
+  liveUpdate();
 });
 
 bitsPicker.addEventListener("input", () => {
-    bitsHex.value = bitsPicker.value;
-    live();
+  bitsHex.value = bitsPicker.value;
+  liveUpdate();
 });
 
 bitsHex.addEventListener("input", () => {
-    bitsPicker.value = bitsHex.value;
-    live();
+  bitsPicker.value = bitsHex.value;
+  liveUpdate();
 });
 
-fontFamily.addEventListener("input", live);
-fontSize.addEventListener("input", live);
+fontFamily.addEventListener("input", liveUpdate);
+fontSize.addEventListener("input", liveUpdate);
 
 // =====================
-// SAVE CUSTOM
+// GUARDAR EN FIREBASE
 // =====================
-document.getElementById("save").addEventListener("click", () => {
-    const custom = getCurrent();
-    set(ref(db, "style/custom"), custom);
+document.getElementById("save").addEventListener("click", async () => {
+  const custom = getCurrent();
+
+  await set(ref(db, "style/custom"), custom);
+
+  console.log("Custom guardado en Firebase");
 });
 
 // =====================
-// RESET DEFAULT
+// RESET
 // =====================
-document.getElementById("reset").addEventListener("click", () => {
-    set(ref(db, "style/custom"), null);
+document.getElementById("reset").addEventListener("click", async () => {
+  await set(ref(db, "style/custom"), null);
+
+  console.log("Reset a default");
 });
-
-
-
-
-
-
-// =====================
-// INIT DATA (ONE TIME SAFE SETUP)
-// =====================
-async function initFirebase() {
-    const snap = await new Promise((resolve) => {
-        onValue(styleRef, resolve, { onlyOnce: true });
-    });
-
-    const data = snap.val();
-
-    // Si ya existe, no tocar nada
-    if (data) return;
-
-    // Estructura inicial
-    const initialData = {
-        default: {
-            subsColor: "#9146FF",
-            bitsColor: "#FFD54F",
-            textColor: "#ffffff",
-            bgColor: "#1a1a1a",
-            font: "Arial",
-            size: 18
-        },
-        custom: null
-    };
-
-    await set(styleRef, initialData);
-
-    console.log("Firebase inicializado correctamente");
-}
-
-initFirebase();
