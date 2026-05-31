@@ -2,25 +2,15 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Gradient Theme Editor</title>
+<title>Gradient Picker Pro</title>
 
 <style>
-:root {
-    --border: #9146FF;
-    --text: #ffffff;
-    --bg: #000000;
-    --shadow: rgba(145,70,255,0.3);
-}
-
-/* =========================
-   BASE
-========================= */
 body {
     margin: 0;
+    display: flex;
     font-family: Arial;
     background: #0f0f0f;
     color: white;
-    display: flex;
     height: 100vh;
 }
 
@@ -28,9 +18,9 @@ body {
    PANEL
 ========================= */
 .panel {
-    width: 40%;
-    padding: 20px;
+    width: 45%;
     background: #1a1a1a;
+    padding: 20px;
     overflow-y: auto;
 }
 
@@ -42,33 +32,32 @@ body {
 }
 
 h3 {
-    margin: 0 0 10px 0;
+    margin-top: 0;
 }
 
 /* =========================
    PREVIEW
 ========================= */
 .preview {
-    width: 60%;
+    width: 55%;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: var(--bg);
+    background: #000;
 }
 
 .card {
     position: relative;
-    padding: 20px;
+    padding: 25px;
     border-radius: 15px;
-    min-width: 150px;
+    min-width: 160px;
     text-align: center;
     background: var(--bg);
     color: var(--text);
-    box-shadow: 0 0 20px var(--shadow);
-    border: 2px solid transparent;
+    box-shadow: var(--shadow);
 }
 
-/* BORDER GRADIENT SUPPORT */
+/* BORDER GRADIENT */
 .card::before {
     content: "";
     position: absolute;
@@ -76,7 +65,11 @@ h3 {
     padding: 2px;
     border-radius: 15px;
 
-    background: var(--border);
+    background: linear-gradient(
+        45deg,
+        var(--b1),
+        var(--b2)
+    );
 
     -webkit-mask:
         linear-gradient(#000 0 0) content-box,
@@ -88,8 +81,18 @@ h3 {
 }
 
 /* =========================
-   TEXT
+   TEXT GRADIENT
 ========================= */
+.label, .value {
+    background: linear-gradient(
+        45deg,
+        var(--t1),
+        var(--t2)
+    );
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .label {
     font-size: 18px;
 }
@@ -105,22 +108,23 @@ h3 {
 .row {
     display: flex;
     gap: 10px;
+    align-items: center;
     margin-top: 10px;
 }
 
-input[type="text"] {
-    flex: 1;
-    padding: 6px;
+input[type="color"] {
+    width: 50px;
+    height: 35px;
+    border: none;
+    background: none;
+}
+
+.hex {
+    width: 90px;
     background: #111;
     border: 1px solid #444;
     color: white;
-    border-radius: 5px;
-}
-
-button {
-    margin-top: 10px;
-    padding: 8px;
-    width: 100%;
+    padding: 5px;
 }
 </style>
 
@@ -129,31 +133,53 @@ button {
 <body>
 
 <!-- =========================
-     EDITOR
+     PANEL
 ========================= -->
 <div class="panel">
 
     <div class="section">
-        <h3>Border (color o gradient)</h3>
-        <input type="text" id="border" value="linear-gradient(45deg,#9146FF,#ff4fd8)">
+        <h3>Border Gradient</h3>
+        <div class="row">
+            <input type="color" id="b1c">
+            <input class="hex" id="b1h">
+        </div>
+        <div class="row">
+            <input type="color" id="b2c">
+            <input class="hex" id="b2h">
+        </div>
     </div>
 
     <div class="section">
-        <h3>Text Color</h3>
-        <input type="text" id="text" value="#ffffff">
+        <h3>Text Gradient</h3>
+        <div class="row">
+            <input type="color" id="t1c">
+            <input class="hex" id="t1h">
+        </div>
+        <div class="row">
+            <input type="color" id="t2c">
+            <input class="hex" id="t2h">
+        </div>
     </div>
 
     <div class="section">
         <h3>Background</h3>
-        <input type="text" id="bg" value="#000000">
+        <div class="row">
+            <input type="color" id="bgc">
+            <input class="hex" id="bgh">
+        </div>
     </div>
 
     <div class="section">
-        <h3>Shadow (color o rgba)</h3>
-        <input type="text" id="shadow" value="0 0 20px rgba(145,70,255,0.4)">
+        <h3>Shadow</h3>
+        <div class="row">
+            <input type="color" id="s1c">
+            <input class="hex" id="s1h">
+        </div>
+        <div class="row">
+            <input type="color" id="s2c">
+            <input class="hex" id="s2h">
+        </div>
     </div>
-
-    <button onclick="apply()">Aplicar</button>
 
 </div>
 
@@ -161,7 +187,7 @@ button {
      PREVIEW
 ========================= -->
 <div class="preview">
-    <div class="card" id="card">
+    <div class="card">
         <div class="label">SUBS</div>
         <div class="value">12</div>
     </div>
@@ -169,35 +195,50 @@ button {
 
 <script>
 /* =========================
+   UTIL HEX SYNC
+========================= */
+function sync(color, hex) {
+    color.addEventListener("input", () => hex.value = color.value);
+    hex.addEventListener("input", () => color.value = hex.value);
+}
+
+/* =========================
    APPLY SYSTEM
 ========================= */
 function apply() {
 
-    const border = document.getElementById("border").value;
-    const text = document.getElementById("text").value;
-    const bg = document.getElementById("bg").value;
-    const shadow = document.getElementById("shadow").value;
+    document.documentElement.style.setProperty("--b1", b1c.value);
+    document.documentElement.style.setProperty("--b2", b2c.value);
 
-    const root = document.documentElement;
+    document.documentElement.style.setProperty("--t1", t1c.value);
+    document.documentElement.style.setProperty("--t2", t2c.value);
 
-    // BORDER (gradient o color)
-    root.style.setProperty("--border", border);
+    document.documentElement.style.setProperty("--bg", bgc.value);
 
-    // TEXT
-    root.style.setProperty("--text", text);
-    document.querySelector(".card").style.color = text;
+    document.documentElement.style.setProperty("--s1", s1c.value);
+    document.documentElement.style.setProperty("--s2", s2c.value);
 
-    // BACKGROUND
-    root.style.setProperty("--bg", bg);
-
-    // SHADOW
-    root.style.setProperty("--shadow", shadow);
-
-    // APPLY BG DIRECT
-    document.querySelector(".preview").style.background = bg;
+    document.querySelector(".card").style.boxShadow =
+        `0 0 20px ${s1c.value}88, 0 0 40px ${s2c.value}44`;
 }
 
-/* INIT */
+/* =========================
+   INIT SYNC
+========================= */
+const ids = [
+    "b1","b2","t1","t2","bg","s1","s2"
+];
+
+ids.forEach(id => {
+    const c = document.getElementById(id + "c");
+    const h = document.getElementById(id + "h");
+
+    sync(c, h);
+    c.addEventListener("input", apply);
+    h.addEventListener("input", apply);
+});
+
+/* INIT DEFAULT */
 apply();
 </script>
 
