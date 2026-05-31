@@ -157,3 +157,41 @@ document.getElementById("save").addEventListener("click", () => {
 document.getElementById("reset").addEventListener("click", () => {
     set(ref(db, "style/custom"), null);
 });
+
+
+
+
+
+
+// =====================
+// INIT DATA (ONE TIME SAFE SETUP)
+// =====================
+async function initFirebase() {
+    const snap = await new Promise((resolve) => {
+        onValue(styleRef, resolve, { onlyOnce: true });
+    });
+
+    const data = snap.val();
+
+    // Si ya existe, no tocar nada
+    if (data) return;
+
+    // Estructura inicial
+    const initialData = {
+        default: {
+            subsColor: "#9146FF",
+            bitsColor: "#FFD54F",
+            textColor: "#ffffff",
+            bgColor: "#1a1a1a",
+            font: "Arial",
+            size: 18
+        },
+        custom: null
+    };
+
+    await set(styleRef, initialData);
+
+    console.log("Firebase inicializado correctamente");
+}
+
+initFirebase();
