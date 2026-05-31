@@ -1,75 +1,164 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+// =====================
+// FIREBASE CONFIG
+// =====================
+const firebaseConfig = {
+    apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
+    authDomain: "contador-reto.firebaseapp.com",
+    databaseURL: "https://contador-reto-default-rtdb.firebaseio.com",
+    projectId: "contador-reto",
+    storageBucket: "contador-reto.firebasestorage.app",
+    messagingSenderId: "704169660240",
+    appId: "1:704169660240:web:1a4b3e35a9498292c0e655"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// =====================
+// REFERENCIA FIREBASE
+// =====================
+const styleRef = ref(db, "style");
+
+// =====================
+// ELEMENTOS
+// =====================
 const subsPicker = document.getElementById("subsPicker");
 const subsHex = document.getElementById("subsHex");
 
 const bitsPicker = document.getElementById("bitsPicker");
 const bitsHex = document.getElementById("bitsHex");
 
+const fontFamily = document.getElementById("fontFamily");
+const fontSize = document.getElementById("fontSize");
+
 const frame = document.getElementById("frame");
 
 // =====================
-// COLOR SYNC SUBS
+// ESTADO LOCAL
 // =====================
+let state = {
+    default: {
+        subsColor: "#9146FF",
+        bitsColor: "#FFD54F",
+        font: "Arial",
+        size: 24
+    },
+    custom: null
+};
+
+// =====================
+// LEER FIREBASE
+// =====================
+onValue(styleRef, (snap) => {
+    const data = snap.val();
+
+    if (!data) {
+        // si no existe, crear default
+        set(styleRef, state);
+        return;
+    }
+
+    state = data;
+
+    const active = state.custom || state.default;
+
+    loadInputs(active);
+    applyPreview(active);
+});
+
+// =====================
+// CARGAR INPUTS
+// =====================
+function loadInputs(style) {
+    subsPicker.value = style.subsColor;
+    subsHex.value = style.subsColor;
+
+    bitsPicker.value = style.bitsColor;
+    bitsHex.value = style.bitsColor;
+
+    fontFamily.value = style.font;
+    fontSize.value = style.size;
+}
+
+// =====================
+// PREVIEW VISUAL (EDITOR)
+// =====================
+function applyPreview(style) {
+
+    document.getElementById("subsCurrent").style.background = style.subsColor;
+    document.getElementById("bitsCurrent").style.background = style.bitsColor;
+
+    document.getElementById("fontPreview").style.fontFamily = style.font;
+    document.getElementById("fontPreview").style.fontSize = style.size + "px";
+}
+
+// =====================
+// UPDATE LIVE STATE
+// =====================
+function getCurrentInputStyle() {
+    return {
+        subsColor: subsHex.value,
+        bitsColor: bitsHex.value,
+        font: fontFamily.value,
+        size: Number(fontSize.value)
+    };
+}
+
+// =====================
+// INPUT EVENTS
+// =====================
+
+// subs
 subsPicker.addEventListener("input", () => {
     subsHex.value = subsPicker.value;
-    updatePreview();
+    livePreview();
 });
 
 subsHex.addEventListener("input", () => {
     subsPicker.value = subsHex.value;
-    updatePreview();
+    livePreview();
 });
 
-// =====================
-// COLOR SYNC BITS
-// =====================
+// bits
 bitsPicker.addEventListener("input", () => {
     bitsHex.value = bitsPicker.value;
-    updatePreview();
+    livePreview();
 });
 
 bitsHex.addEventListener("input", () => {
     bitsPicker.value = bitsHex.value;
-    updatePreview();
+    livePreview();
 });
 
-// =====================
-// TEXTO
-// =====================
-document.getElementById("fontFamily").addEventListener("input", updatePreview);
-document.getElementById("fontSize").addEventListener("input", updatePreview);
+// font
+fontFamily.addEventListener("input", livePreview);
+fontSize.addEventListener("input", livePreview);
 
 // =====================
-// PREVIEW LIVE
+// LIVE PREVIEW (SIN GUARDAR)
 // =====================
-function updatePreview() {
-
-    const subsColor = subsHex.value || "#9146FF";
-    const bitsColor = bitsHex.value || "#FFD54F";
-
-    const font = document.getElementById("fontFamily").value || "Arial";
-    const size = document.getElementById("fontSize").value || 20;
-
-    frame.contentWindow.postMessage({
-        subsColor,
-        bitsColor,
-        font,
-        size
-    }, "*");
+function livePreview() {
+    const style = getCurrentInputStyle();
+    applyPreview(style);
 }
 
 // =====================
-// SAVE / RESET
+// GUARDAR CUSTOM
 // =====================
 document.getElementById("save").addEventListener("click", () => {
-    localStorage.setItem("overlayStyle", JSON.stringify({
-        subs: subsHex.value,
-        bits: bitsHex.value,
-        font: document.getElementById("fontFamily").value,
-        size: document.getElementById("fontSize").value
-    }));
+
+    const custom = getCurrentInputStyle();
+
+    set(ref(db, "style/custom"), custom);
 });
 
+// =====================
+// RESET A DEFAULT
+// =====================
 document.getElementById("reset").addEventListener("click", () => {
-    localStorage.removeItem("overlayStyle");
-    location.reload();
+
+    set(ref(db, "style/custom"), null);
 });
