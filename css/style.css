@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+    background: transparent;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+.card {
+    background: rgba(0, 0, 0, 0.75);
+    border: 2px solid #9146FF;
+    border-radius: 15px;
+    padding: 15px 25px;
+    min-width: 120px;
+    text-align: center;
+    color: white;
+    box-shadow: 0 0 15px rgba(145,70,255,0.4);
+}
+
+.label {
+    font-size: 20px;
+    color: #ffb3d9;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.value {
+    font-size: 40px;
+    font-weight: bold;
+}
