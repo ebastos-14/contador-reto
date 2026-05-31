@@ -5,15 +5,15 @@
     /* BORDE SOLIDO */
     --border-gradient: linear-gradient(
         var(--gradient-angle),
-        #9146FF,
-        #ff4fd8
+        #FFA8D8,
+        #FFBA6E
     );
 
     /* BORDE SOMBRA */
     --shadow-gradient: linear-gradient(
         var(--gradient-angle),
-        rgba(145,70,255,0.6),
-        rgba(255,79,216,0.2)
+        #FFB846,
+        #FF4F8F
     );
 
     /* TEXTO NUMERO */
