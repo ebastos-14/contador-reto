@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overlay Twitch</title>
+
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ACTUALES -->
+
+    <div class="card">
+        <div class="label">SUBS HOY</div>
+        <div class="value" id="subsCurrent">0</div>
+    </div>
+
+    <div class="card">
+        <div class="label">BITS HOY</div>
+        <div class="value" id="bitsCurrent">0</div>
+    </div>
+
+    <!-- DERECHA (POR AHORA SIGUEN LLAMÁNDOSE TOTAL) -->
+
+    <div class="totals-column">
+
+        <div class="card total-card">
+            <div class="label total-label">TOTAL SUBS</div>
+            <div class="value total-value" id="subsTotal">0</div>
+        </div>
+
+        <div class="card total-card">
+            <div class="label total-label">TOTAL BITS</div>
+            <div class="value total-value" id="bitsTotal">0</div>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+    getDatabase,
+    ref,
+    onValue,
+    get,
+    set
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
+    authDomain: "contador-reto.firebaseapp.com",
+    databaseURL: "https://contador-reto-default-rtdb.firebaseio.com",
+    projectId: "contador-reto",
+    storageBucket: "contador-reto.firebasestorage.app",
+    messagingSenderId: "704169660240",
+    appId: "1:704169660240:web:1a4b3e35a9498292c0e655"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const countersRef = ref(db, "counters");
+
+function getUTCDate() {
+    return new Date().toISOString().split("T")[0];
+}
+
+async function checkDailyReset() {
+
+    const snap = await get(countersRef);
+    const data = snap.val();
+
+    if (!data) return;
+
+    const today = getUTCDate();
+    const lastReset =
+        data?.current?.lastReset || today;
+
+    if (lastReset === today) return;
+
+    await set(countersRef, {
+
+        current: {
+            subs: 0,
+            bits: 0,
+
+            avas: 0,
+            cofres: 0,
+
+            lastReset: today
+        },
+
+        total: {
+            subs: data?.total?.subs || 0,
+            bits: data?.total?.bits || 0,
+
+            avas: data?.total?.avas || 0,
+            cofres: data?.total?.cofres || 0
+        }
+    });
+}
+
+await checkDailyReset();
+
+onValue(countersRef, async(snapshot) => {
+
+    const data = snapshot.val();
+
+    if (!data) return;
+
+    const today = getUTCDate();
+
+    if (data?.current?.lastReset !== today) {
+        await checkDailyReset();
+        return;
+    }
+
+    // IZQUIERDA
+
+    document.getElementById("subsCurrent").textContent =
+        data?.current?.subs ?? 0;
+
+    document.getElementById("bitsCurrent").textContent =
+        data?.current?.bits ?? 0;
+
+    // DERECHA
+    // MANTENEMOS LOS IDS ACTUALES
+    // PERO MOSTRAMOS AVAS Y COFRES
+
+    document.getElementById("subsTotal").textContent =
+        data?.current?.avas ?? 0;
+
+    document.getElementById("bitsTotal").textContent =
+        data?.current?.cofres ?? 0;
+
+});
+
+</script>
+
+</body>
+</html>
