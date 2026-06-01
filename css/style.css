@@ -120,36 +120,36 @@ body {
 
 
 /* =========================
-   TOTALS COLUMN
+   DOUBLESS COLUMN
 ========================= */
 
-.totals-column {
+.doubles-column {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
 /* =========================
-   TOTAL CARD
+   DOUBLES CARD
 ========================= */
 
-.total-card {
+.double-card {
     min-width: 110px;
     padding: 10px 18px;
 }
 
 /* =========================
-   TOTAL LABEL
+   DOUBLES LABEL
 ========================= */
 
-.total-label {
+.double-label {
     font-size: 12px;
 }
 
 /* =========================
-   TOTAL VALUE
+   DOUBLES VALUE
 ========================= */
 
-.total-value {
+.double-value {
     font-size: 24px;
 }
