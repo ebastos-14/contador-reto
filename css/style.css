@@ -95,7 +95,7 @@ body {
    LABEL GRADIENT TEXT
 ========================= */
 .label {
-    font-size: 20px;
+    font-size: 30px;
     font-weight: bold;
 
     background: var(--label-gradient);
@@ -109,7 +109,7 @@ body {
    VALUE GRADIENT TEXT
 ========================= */
 .value {
-    font-size: 40px;
+    font-size: 60px;
     font-weight: bold;
 
     background: var(--value-gradient);
