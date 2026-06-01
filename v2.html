@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Counter V2</title>
+
+<style>
+body {
+    margin: 0;
+    background: transparent;
+    font-family: Arial;
+    overflow: hidden;
+    color: white;
+}
+
+/* =========================
+   LAYOUT
+========================= */
+.wrapper {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* =========================
+   LEFT (CURRENT)
+========================= */
+.left {
+    display: flex;
+    gap: 20px;
+}
+
+.card {
+    background: rgba(0,0,0,0.75);
+    border-radius: 15px;
+    padding: 15px 25px;
+    min-width: 140px;
+    text-align: center;
+    border: 2px solid #9146FF;
+    box-shadow: 0 0 15px rgba(145,70,255,0.3);
+}
+
+.title {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+.value {
+    font-size: 38px;
+    font-weight: bold;
+}
+
+/* =========================
+   RIGHT (TOTALS)
+========================= */
+.right {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.smallCard {
+    background: rgba(0,0,0,0.85);
+    border-radius: 12px;
+    padding: 12px 18px;
+    min-width: 120px;
+    text-align: center;
+    border: 1px solid #ff4fd8;
+}
+
+.smallTitle {
+    font-size: 14px;
+    opacity: 0.7;
+}
+
+.smallValue {
+    font-size: 26px;
+    font-weight: bold;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="wrapper">
+
+    <!-- ================= LEFT CURRENT ================= -->
+    <div class="left">
+
+        <div class="card">
+            <div class="title">SUBS HOY</div>
+            <div class="value" id="subsCurrent">0</div>
+        </div>
+
+        <div class="card">
+            <div class="title">BITS HOY</div>
+            <div class="value" id="bitsCurrent">0</div>
+        </div>
+
+    </div>
+
+    <!-- ================= RIGHT TOTALS ================= -->
+    <div class="right">
+
+        <div class="smallCard">
+            <div class="smallTitle">TOTAL SUBS</div>
+            <div class="smallValue" id="subsTotal">0</div>
+        </div>
+
+        <div class="smallCard">
+            <div class="smallTitle">TOTAL BITS</div>
+            <div class="smallValue" id="bitsTotal">0</div>
+        </div>
+
+    </div>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* =========================
+   FIREBASE
+========================= */
+const firebaseConfig = {
+    apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
+    authDomain: "contador-reto.firebaseapp.com",
+    databaseURL: "https://contador-reto-default-rtdb.firebaseio.com",
+    projectId: "contador-reto",
+    storageBucket: "contador-reto.firebasestorage.app",
+    messagingSenderId: "704169660240",
+    appId: "1:704169660240:web:1a4b3e35a9498292c0e655"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const counterRef = ref(db, "counters");
+
+/* =========================
+   GET UTC DAY
+========================= */
+function getUTCDate() {
+    return new Date().toISOString().split("T")[0];
+}
+
+/* =========================
+   RESET CHECK
+========================= */
+async function checkReset(data) {
+
+    const today = getUTCDate();
+    const lastReset = data?.current?.lastReset;
+
+    if (lastReset !== today) {
+
+        await set(counterRef, {
+            current: {
+                subs: 0,
+                bits: 0,
+                lastReset: today
+            },
+            total: data?.total || {
+                subs: 0,
+                bits: 0
+            }
+        });
+
+        console.log("RESET UTC EJECUTADO");
+    }
+}
+
+/* =========================
+   LISTENER
+========================= */
+onValue(counterRef, async (snap) => {
+
+    let data = snap.val();
+
+    if (!data) {
+        data = {
+            current: { subs: 0, bits: 0, lastReset: getUTCDate() },
+            total: { subs: 0, bits: 0 }
+        };
+
+        await set(counterRef, data);
+    }
+
+    await checkReset(data);
+
+    document.getElementById("subsCurrent").innerText = data.current.subs;
+    document.getElementById("bitsCurrent").innerText = data.current.bits;
+
+    document.getElementById("subsTotal").innerText = data.total.subs;
+    document.getElementById("bitsTotal").innerText = data.total.bits;
+});
+</script>
+
+</body>
+</html>
