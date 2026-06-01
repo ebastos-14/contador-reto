@@ -24,30 +24,60 @@ function getUTCDate() {
 // ======================
 // LEER + ACTUALIZAR
 // ======================
-async function updateStats(addSubs = 0, addBits = 0) {
+async function updateStats(
+  addSubs = 0,
+  addBits = 0,
+  addAvas = 0,
+  addCofres = 0
+) {
   try {
     const res = await fetch(FIREBASE_URL);
     const data = await res.json();
 
-    const currentSubs = data?.current?.subs || 0;
-    const currentBits = data?.current?.bits || 0;
+    const today = getUTCDate();
+
+    let currentSubs = data?.current?.subs || 0;
+    let currentBits = data?.current?.bits || 0;
+    let currentAvas = data?.current?.avas || 0;
+    let currentCofres = data?.current?.cofres || 0;
 
     const totalSubs = data?.total?.subs || 0;
     const totalBits = data?.total?.bits || 0;
+    const totalAvas = data?.total?.avas || 0;
+    const totalCofres = data?.total?.cofres || 0;
 
-    const lastReset =
-      data?.current?.lastReset || getUTCDate();
+    let lastReset =
+      data?.current?.lastReset || today;
+
+    // ======================
+    // RESET UTC AUTOMÁTICO
+    // ======================
+    if (lastReset !== today) {
+
+      currentSubs = 0;
+      currentBits = 0;
+      currentAvas = 0;
+      currentCofres = 0;
+
+      lastReset = today;
+
+      console.log("UTC reset ejecutado");
+    }
 
     const updated = {
       current: {
         subs: currentSubs + addSubs,
         bits: currentBits + addBits,
+        avas: currentAvas + addAvas,
+        cofres: currentCofres + addCofres,
         lastReset
       },
 
       total: {
         subs: totalSubs + addSubs,
-        bits: totalBits + addBits
+        bits: totalBits + addBits,
+        avas: totalAvas + addAvas,
+        cofres: totalCofres + addCofres
       }
     };
 
@@ -84,12 +114,16 @@ async function initializeCounters() {
       current: {
         subs: 0,
         bits: 0,
+        avas: 0,
+        cofres: 0,
         lastReset: getUTCDate()
       },
 
       total: {
         subs: 0,
-        bits: 0
+        bits: 0,
+        avas: 0,
+        cofres: 0
       }
     };
 
@@ -120,7 +154,6 @@ app.get("/event", async (req, res) => {
       token
     } = req.query;
 
-    // Seguridad
     if (token !== SECRET_TOKEN) {
       return res.status(403).send("invalid token");
     }
@@ -129,19 +162,28 @@ app.get("/event", async (req, res) => {
 
     // SUB
     if (type === "sub") {
-      await updateStats(1, 0);
+      await updateStats(1, 0, 0, 0);
     }
 
     // BITS
     if (type === "bits" || type === "cheer") {
-      await updateStats(0, value);
+      await updateStats(0, value, 0, 0);
+    }
+
+    // AVA
+    if (type === "ava") {
+      await updateStats(0, 0, 1, 0);
+    }
+
+    // COFRE
+    if (type === "cofre") {
+      await updateStats(0, 0, 0, 1);
     }
 
     console.log(
       `[EVENT] type=${type} amount=${value}`
     );
 
-    // Sin respuesta visible
     res.status(204).end();
 
   } catch (err) {
