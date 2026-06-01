@@ -29,7 +29,6 @@ function getUTCDate() {
 async function checkDailyReset() {
 
     const snap = await get(countersRef);
-
     const data = snap.val();
 
     if (!data) return;
@@ -42,25 +41,28 @@ async function checkDailyReset() {
     if (lastReset === today) return;
 
     await set(countersRef, {
+
         current: {
             subs: 0,
             bits: 0,
+            avas: 0,
+            cofres: 0,
             lastReset: today
         },
 
         total: {
             subs: data?.total?.subs || 0,
-            bits: data?.total?.bits || 0
+            bits: data?.total?.bits || 0,
+            avas: data?.total?.avas || 0,
+            cofres: data?.total?.cofres || 0
         }
     });
 
     console.log("UTC reset ejecutado");
 }
 
-// Ejecutar una vez al cargar
 await checkDailyReset();
 
-// Listener principal
 onValue(countersRef, async (snapshot) => {
 
     const data = snapshot.val();
@@ -74,16 +76,76 @@ onValue(countersRef, async (snapshot) => {
         return;
     }
 
-    document.getElementById("subsCurrent").textContent =
-        data?.current?.subs ?? 0;
+    // ======================
+    // CURRENT
+    // ======================
 
-    document.getElementById("bitsCurrent").textContent =
-        data?.current?.bits ?? 0;
+    const subsCurrent =
+        document.getElementById("subsCurrent");
 
-    document.getElementById("avasCurrent").textContent =
-        data?.currents?.avas ?? 0;
+    if (subsCurrent) {
+        subsCurrent.textContent =
+            data?.current?.subs ?? 0;
+    }
 
-    document.getElementById("cofresCurrent").textContent =
-        data?.current?.cofres ?? 0;
+    const bitsCurrent =
+        document.getElementById("bitsCurrent");
+
+    if (bitsCurrent) {
+        bitsCurrent.textContent =
+            data?.current?.bits ?? 0;
+    }
+
+    const avasCurrent =
+        document.getElementById("avasCurrent");
+
+    if (avasCurrent) {
+        avasCurrent.textContent =
+            data?.current?.avas ?? 0;
+    }
+
+    const cofresCurrent =
+        document.getElementById("cofresCurrent");
+
+    if (cofresCurrent) {
+        cofresCurrent.textContent =
+            data?.current?.cofres ?? 0;
+    }
+
+    // ======================
+    // TOTAL
+    // ======================
+
+    const subsTotal =
+        document.getElementById("subsTotal");
+
+    if (subsTotal) {
+        subsTotal.textContent =
+            data?.total?.subs ?? 0;
+    }
+
+    const bitsTotal =
+        document.getElementById("bitsTotal");
+
+    if (bitsTotal) {
+        bitsTotal.textContent =
+            data?.total?.bits ?? 0;
+    }
+
+    const avasTotal =
+        document.getElementById("avasTotal");
+
+    if (avasTotal) {
+        avasTotal.textContent =
+            data?.total?.avas ?? 0;
+    }
+
+    const cofresTotal =
+        document.getElementById("cofresTotal");
+
+    if (cofresTotal) {
+        cofresTotal.textContent =
+            data?.total?.cofres ?? 0;
+    }
 
 });
