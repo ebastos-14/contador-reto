@@ -1,5 +1,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+    getDatabase,
+    ref,
+    onValue,
+    get,
+    set
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
@@ -16,21 +22,63 @@ const db = getDatabase(app);
 
 const countersRef = ref(db, "counters");
 
-onValue(countersRef, (snapshot) => {
+function getUTCDate() {
+    return new Date().toISOString().split("T")[0];
+}
+
+async function checkDailyReset() {
+
+    const snap = await get(countersRef);
+
+    const data = snap.val();
+
+    if (!data) return;
+
+    const today = getUTCDate();
+
+    const lastReset =
+        data?.current?.lastReset || today;
+
+    if (lastReset === today) return;
+
+    await set(countersRef, {
+        current: {
+            subs: 0,
+            bits: 0,
+            lastReset: today
+        },
+
+        total: {
+            subs: data?.total?.subs || 0,
+            bits: data?.total?.bits || 0
+        }
+    });
+
+    console.log("UTC reset ejecutado");
+}
+
+// Ejecutar una vez al cargar
+await checkDailyReset();
+
+// Listener principal
+onValue(countersRef, async (snapshot) => {
 
     const data = snapshot.val();
 
     if (!data) return;
 
-    // ACTUALES
+    const today = getUTCDate();
+
+    if (data?.current?.lastReset !== today) {
+        await checkDailyReset();
+        return;
+    }
 
     document.getElementById("subsCurrent").textContent =
         data?.current?.subs ?? 0;
 
     document.getElementById("bitsCurrent").textContent =
         data?.current?.bits ?? 0;
-
-    // TOTALES
 
     document.getElementById("subsTotal").textContent =
         data?.total?.subs ?? 0;
