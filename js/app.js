@@ -15,13 +15,26 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 const statsRef = ref(db, "counters");
-
-onValue(statsRef, (snapshot) => {
+onValue(countersRef, (snapshot) => {
 
     const data = snapshot.val();
 
-    if(!data) return;
+    if (!data) return;
 
-    document.getElementById("subs").innerText = data.subs ?? 0;
-    document.getElementById("bits").innerText = data.bits ?? 0;
+    // ACTUALES
+
+    document.getElementById("subsCurrent").textContent =
+        data?.current?.subs ?? 0;
+
+    document.getElementById("bitsCurrent").textContent =
+        data?.current?.bits ?? 0;
+
+    // TOTALES
+
+    document.getElementById("subsTotal").textContent =
+        data?.total?.subs ?? 0;
+
+    document.getElementById("bitsTotal").textContent =
+        data?.total?.bits ?? 0;
+
 });
