@@ -14,7 +14,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const statsRef = ref(db, "counters");
+const countersRef = ref(db, "counters");
+
 onValue(countersRef, (snapshot) => {
 
     const data = snapshot.val();
