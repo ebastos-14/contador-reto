@@ -116,3 +116,40 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+
+
+
+/* =========================
+   TOTALS COLUMN
+========================= */
+
+.totals-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* =========================
+   TOTAL CARD
+========================= */
+
+.total-card {
+    min-width: 110px;
+    padding: 10px 18px;
+}
+
+/* =========================
+   TOTAL LABEL
+========================= */
+
+.total-label {
+    font-size: 12px;
+}
+
+/* =========================
+   TOTAL VALUE
+========================= */
+
+.total-value {
+    font-size: 24px;
+}
