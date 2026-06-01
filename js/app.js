@@ -80,10 +80,10 @@ onValue(countersRef, async (snapshot) => {
     document.getElementById("bitsCurrent").textContent =
         data?.current?.bits ?? 0;
 
-    document.getElementById("subsTotal").textContent =
-        data?.total?.subs ?? 0;
+    document.getElementById("avasCurrent").textContent =
+        data?.currents?.avas ?? 0;
 
-    document.getElementById("bitsTotal").textContent =
-        data?.total?.bits ?? 0;
+    document.getElementById("cofresCurrent").textContent =
+        data?.current?.cofres ?? 0;
 
 });
