@@ -2,115 +2,83 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Counter V2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Contador Reto V2</title>
+
+<link rel="stylesheet" href="css/styles.css">
 
 <style>
-body {
-    margin: 0;
-    background: transparent;
-    font-family: Arial;
-    overflow: hidden;
-    color: white;
-}
+/* Solo layout */
 
-/* =========================
-   LAYOUT
-========================= */
-.wrapper {
+.container {
     display: flex;
+    align-items: flex-start;
     gap: 20px;
     padding: 20px;
 }
 
-/* =========================
-   LEFT (CURRENT)
-========================= */
-.left {
+.current-counters {
     display: flex;
     gap: 20px;
 }
 
-.card {
-    background: rgba(0,0,0,0.75);
-    border-radius: 15px;
-    padding: 15px 25px;
-    min-width: 140px;
-    text-align: center;
-    border: 2px solid #9146FF;
-    box-shadow: 0 0 15px rgba(145,70,255,0.3);
-}
-
-.title {
-    font-size: 16px;
-    opacity: 0.8;
-}
-
-.value {
-    font-size: 38px;
-    font-weight: bold;
-}
-
-/* =========================
-   RIGHT (TOTALS)
-========================= */
-.right {
+.total-counters {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
-.smallCard {
-    background: rgba(0,0,0,0.85);
-    border-radius: 12px;
-    padding: 12px 18px;
-    min-width: 120px;
-    text-align: center;
-    border: 1px solid #ff4fd8;
+/* Opcional:
+   Totales un poco más compactos
+*/
+.total-counters .card {
+    min-width: 100px;
+    padding: 10px 18px;
 }
 
-.smallTitle {
-    font-size: 14px;
-    opacity: 0.7;
+.total-counters .label {
+    font-size: 16px;
 }
 
-.smallValue {
-    font-size: 26px;
-    font-weight: bold;
+.total-counters .value {
+    font-size: 28px;
 }
 </style>
-
 </head>
 
 <body>
 
-<div class="wrapper">
+<div class="container">
 
-    <!-- ================= LEFT CURRENT ================= -->
-    <div class="left">
+    <!-- CONTADORES ACTUALES -->
+
+    <div class="current-counters">
 
         <div class="card">
-            <div class="title">SUBS HOY</div>
+            <div class="label">SUBS HOY</div>
             <div class="value" id="subsCurrent">0</div>
         </div>
 
         <div class="card">
-            <div class="title">BITS HOY</div>
+            <div class="label">BITS HOY</div>
             <div class="value" id="bitsCurrent">0</div>
         </div>
 
     </div>
 
-    <!-- ================= RIGHT TOTALS ================= -->
-    <div class="right">
+    <!-- TOTALES -->
 
-        <div class="smallCard">
-            <div class="smallTitle">TOTAL SUBS</div>
-            <div class="smallValue" id="subsTotal">0</div>
+    <div class="total-counters">
+
+        <div class="card">
+            <div class="label">TOTAL SUBS</div>
+            <div class="value" id="subsTotal">0</div>
         </div>
 
-        <div class="smallCard">
-            <div class="smallTitle">TOTAL BITS</div>
-            <div class="smallValue" id="bitsTotal">0</div>
+        <div class="card">
+            <div class="label">TOTAL BITS</div>
+            <div class="value" id="bitsTotal">0</div>
         </div>
 
     </div>
@@ -118,12 +86,17 @@ body {
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* =========================
-   FIREBASE
-========================= */
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+    getDatabase,
+    ref,
+    onValue
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
 const firebaseConfig = {
     apiKey: "AIzaSyCn_diQLgCbhiL9vu5aFtABR7n0ORvd7Ps",
     authDomain: "contador-reto.firebaseapp.com",
@@ -137,65 +110,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const counterRef = ref(db, "counters");
+const countersRef = ref(db, "counters");
 
-/* =========================
-   GET UTC DAY
-========================= */
-function getUTCDate() {
-    return new Date().toISOString().split("T")[0];
-}
+onValue(countersRef, (snapshot) => {
 
-/* =========================
-   RESET CHECK
-========================= */
-async function checkReset(data) {
+    const data = snapshot.val();
 
-    const today = getUTCDate();
-    const lastReset = data?.current?.lastReset;
+    if (!data) return;
 
-    if (lastReset !== today) {
+    // ACTUALES
 
-        await set(counterRef, {
-            current: {
-                subs: 0,
-                bits: 0,
-                lastReset: today
-            },
-            total: data?.total || {
-                subs: 0,
-                bits: 0
-            }
-        });
+    document.getElementById("subsCurrent").textContent =
+        data?.current?.subs ?? 0;
 
-        console.log("RESET UTC EJECUTADO");
-    }
-}
+    document.getElementById("bitsCurrent").textContent =
+        data?.current?.bits ?? 0;
 
-/* =========================
-   LISTENER
-========================= */
-onValue(counterRef, async (snap) => {
+    // TOTALES
 
-    let data = snap.val();
+    document.getElementById("subsTotal").textContent =
+        data?.total?.subs ?? 0;
 
-    if (!data) {
-        data = {
-            current: { subs: 0, bits: 0, lastReset: getUTCDate() },
-            total: { subs: 0, bits: 0 }
-        };
+    document.getElementById("bitsTotal").textContent =
+        data?.total?.bits ?? 0;
 
-        await set(counterRef, data);
-    }
-
-    await checkReset(data);
-
-    document.getElementById("subsCurrent").innerText = data.current.subs;
-    document.getElementById("bitsCurrent").innerText = data.current.bits;
-
-    document.getElementById("subsTotal").innerText = data.total.subs;
-    document.getElementById("bitsTotal").innerText = data.total.bits;
 });
+
 </script>
 
 </body>
