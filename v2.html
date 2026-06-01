@@ -2,89 +2,36 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Contador Reto V2</title>
+<title>Contador V2</title>
 
 <link rel="stylesheet" href="css/styles.css">
-
-<style>
-/* Solo layout */
-
-.container {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    padding: 20px;
-}
-
-.current-counters {
-    display: flex;
-    gap: 20px;
-}
-
-.total-counters {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-/* Opcional:
-   Totales un poco más compactos
-*/
-.total-counters .card {
-    min-width: 100px;
-    padding: 10px 18px;
-}
-
-.total-counters .label {
-    font-size: 16px;
-}
-
-.total-counters .value {
-    font-size: 28px;
-}
-</style>
 </head>
 
 <body>
 
 <div class="container">
 
-    <!-- CONTADORES ACTUALES -->
-
-    <div class="current-counters">
-
-        <div class="card">
-            <div class="label">SUBS HOY</div>
-            <div class="value" id="subsCurrent">0</div>
-        </div>
-
-        <div class="card">
-            <div class="label">BITS HOY</div>
-            <div class="value" id="bitsCurrent">0</div>
-        </div>
-
+    <div class="card">
+        <div class="label">SUBS HOY</div>
+        <div class="value" id="subsCurrent">0</div>
     </div>
 
-    <!-- TOTALES -->
+    <div class="card">
+        <div class="label">BITS HOY</div>
+        <div class="value" id="bitsCurrent">0</div>
+    </div>
 
-    <div class="total-counters">
+    <div class="card">
+        <div class="label">TOTAL SUBS</div>
+        <div class="value" id="subsTotal">0</div>
+    </div>
 
-        <div class="card">
-            <div class="label">TOTAL SUBS</div>
-            <div class="value" id="subsTotal">0</div>
-        </div>
-
-        <div class="card">
-            <div class="label">TOTAL BITS</div>
-            <div class="value" id="bitsTotal">0</div>
-        </div>
-
+    <div class="card">
+        <div class="label">TOTAL BITS</div>
+        <div class="value" id="bitsTotal">0</div>
     </div>
 
 </div>
-
 <script type="module">
 
 import { initializeApp }
