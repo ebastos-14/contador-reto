@@ -3,27 +3,52 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🔥 Firebase
+// ======================
+// FIREBASE
+// ======================
 const FIREBASE_URL =
   "https://contador-reto-default-rtdb.firebaseio.com/counters.json";
 
-// 🔐 Seguridad simple
+// ======================
+// TOKEN
+// ======================
 const SECRET_TOKEN = "abc123";
 
 // ======================
-// FUNCIÓN: LEER + ACTUALIZAR
+// FECHA UTC
 // ======================
+function getUTCDate() {
+  return new Date().toISOString().split("T")[0];
+}
 
-async function updateStats(addSubs, addBits) {
+// ======================
+// LEER + ACTUALIZAR
+// ======================
+async function updateStats(addSubs = 0, addBits = 0) {
   try {
     const res = await fetch(FIREBASE_URL);
     const data = await res.json();
 
-    const current = data || { subs: 0, bits: 0 };
+    const currentSubs = data?.current?.subs || 0;
+    const currentBits = data?.current?.bits || 0;
+
+    const totalSubs = data?.total?.subs || 0;
+    const totalBits = data?.total?.bits || 0;
+
+    const lastReset =
+      data?.current?.lastReset || getUTCDate();
 
     const updated = {
-      subs: (current.subs || 0) + (addSubs || 0),
-      bits: (current.bits || 0) + (addBits || 0)
+      current: {
+        subs: currentSubs + addSubs,
+        bits: currentBits + addBits,
+        lastReset
+      },
+
+      total: {
+        subs: totalSubs + addSubs,
+        bits: totalBits + addBits
+      }
     };
 
     await fetch(FIREBASE_URL, {
@@ -34,20 +59,68 @@ async function updateStats(addSubs, addBits) {
       body: JSON.stringify(updated)
     });
 
+    console.log("Updated:", updated);
+
   } catch (err) {
-    console.log("Firebase error:", err.message);
+    console.log("Firebase update error:", err.message);
   }
 }
 
 // ======================
-// ROUTE PRINCIPAL
+// CREAR ESTRUCTURA SI NO EXISTE
 // ======================
+async function initializeCounters() {
+  try {
 
+    const res = await fetch(FIREBASE_URL);
+    const data = await res.json();
+
+    if (data) {
+      console.log("Counters ya existen");
+      return;
+    }
+
+    const initialData = {
+      current: {
+        subs: 0,
+        bits: 0,
+        lastReset: getUTCDate()
+      },
+
+      total: {
+        subs: 0,
+        bits: 0
+      }
+    };
+
+    await fetch(FIREBASE_URL, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(initialData)
+    });
+
+    console.log("Counters inicializados");
+
+  } catch (err) {
+    console.log("Init error:", err.message);
+  }
+}
+
+// ======================
+// EVENTOS
+// ======================
 app.get("/event", async (req, res) => {
   try {
-    const { type, amount, token } = req.query;
 
-    // seguridad
+    const {
+      type,
+      amount,
+      token
+    } = req.query;
+
+    // Seguridad
     if (token !== SECRET_TOKEN) {
       return res.status(403).send("invalid token");
     }
@@ -60,32 +133,40 @@ app.get("/event", async (req, res) => {
     }
 
     // BITS
-    if (type === "cheer") {
+    if (type === "bits" || type === "cheer") {
       await updateStats(0, value);
     }
 
-    console.log("event:", type, value);
+    console.log(
+      `[EVENT] type=${type} amount=${value}`
+    );
 
-    res.send("");
+    // Sin respuesta visible
+    res.status(204).end();
 
   } catch (err) {
+
     console.log(err);
+
     res.status(500).send("error");
   }
 });
 
 // ======================
-// ROOT CHECK
+// TEST
 // ======================
-
 app.get("/", (req, res) => {
   res.send("server ok");
 });
 
 // ======================
-// START SERVER
+// START
 // ======================
+app.listen(PORT, async () => {
 
-app.listen(PORT, () => {
-  console.log("Server running on port", PORT);
+  console.log(
+    `Server running on port ${PORT}`
+  );
+
+  await initializeCounters();
 });
